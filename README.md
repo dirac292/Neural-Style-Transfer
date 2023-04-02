@@ -46,11 +46,20 @@ If starting from noise_img otherwise give the starting image as input.
 
 1. Create a virtual Environment
   `conda create -n env`
+  
 2. Activate the environment
   `conda activate env`
+
 3. Install Pytorch
   `conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia`
+
 4. Run
  `python main.py --style 'edtaonisl.jpg' --content 'green_bridge.jpeg' --input "noise" --style_weight 1000000 --content_weight 1 --num_steps 500`
+
 5. To Run using Gradio
    `python gradio_nst.py`
+
+
+<p align="center">
+    <img src="screenshot.png"/>
+</p>
