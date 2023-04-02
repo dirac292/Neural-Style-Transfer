@@ -6,5 +6,17 @@ Paper Reference: https://arxiv.org/pdf/1508.06576.pdf
 |  Style Image | Content Image  |  Content Weight |  Style Weight |  NST Image |
 |---|---|---|---|---|
 |<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="./nst_images/ben_giles_green_bridge_df5065e9-76ee-4f0d-80c3-3a168901193d.jpg" alt= “” width="250px" height="250px"> |
-|   |   |   |   |   |
-|   |   |   |   |   |
+|<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   10|   100000|  <img src="nst_images/ben_giles_green_bridge_afff54bc-e067-4914-a38e-c84dccdf3418.jpg" alt= “” width="250px" height="250px"> |
+|<img src="./images/style_images/edtaonisl.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="nst_images/edtaonisl_green_bridge_4a5f0651-d986-48cb-8dd6-24a4dc5689a4.jpg" alt= “” width="250px" height="250px"> |
+|<img src="./images/style_images/edtaonisl.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/lion.jpg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="nst_images/edtaonisl_lion_69e1ec93-56f7-42b6-af32-f54cc4407a79.jpg" alt= “” width="250px" height="250px"> |
+
+# NST sequence example
+
+The below snapshot is the various stages of NST specifically at a gap of 100 iterations of the LBFGS optimizer from 0 to 800.
+
+Eg 1:
+ <img src="nst_images/edtaonisl_lion_69e1ec93-56f7-42b6-af32-f54cc4407a79_sequence.jpg" alt= “”>
+
+Eg 2:
+  <img src="nst_images/edtaonisl_green_bridge_b56689d8-0344-41c7-a5ae-1586c9270389_sequence.jpg">
+
