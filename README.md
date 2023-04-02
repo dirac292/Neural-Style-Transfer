@@ -14,6 +14,7 @@ Configuration used:
 # Examples:
 |  Style Image | Content Image  |  CW |  SW |  NST Image |
 |---|---|---|---|---|
+|<img src="./images/style_images/candy.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/figures.jpg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="nst_images/candy_figures_6729a5f8-1245-4096-a18b-1d03986d2837.jpg" alt= “” width="250px" height="250px"> |
 |<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="./nst_images/ben_giles_green_bridge_df5065e9-76ee-4f0d-80c3-3a168901193d.jpg" alt= “” width="250px" height="250px"> |
 |<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   10|   100000|  <img src="nst_images/ben_giles_green_bridge_afff54bc-e067-4914-a38e-c84dccdf3418.jpg" alt= “” width="250px" height="250px"> |
 |<img src="./images/style_images/edtaonisl.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="nst_images/edtaonisl_green_bridge_4a5f0651-d986-48cb-8dd6-24a4dc5689a4.jpg" alt= “” width="250px" height="250px"> |
@@ -28,6 +29,9 @@ Eg 1:
 
 Eg 2:
   <img src="nst_images/edtaonisl_green_bridge_b56689d8-0344-41c7-a5ae-1586c9270389_sequence.jpg"   width = "1500px" height="150px">
+
+Eg 3:
+    <img src="nst_images/candy_figures_6729a5f8-1245-4096-a18b-1d03986d2837_sequence.jpg"   width = "1500px" height="150px">
 
 
 # How to run this ?
