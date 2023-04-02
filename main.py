@@ -30,14 +30,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 imsize = 512 if torch.cuda.is_available() else 256
 
-def image_loader(style_img,content_img,input_img,imsize):
+def image_loader(style_img,content_img,input_img,imsize,gr):
+   
+        
     tr = transforms.Compose([transforms.Resize((imsize,imsize)),transforms.ToTensor()])
-    style_image = Image.open(style_img)
-    content_image = Image.open(content_img)
+    if gr:
+        style_image = tr(style_img).unsqueeze(0)
+        content_image = tr(content_img).unsqueeze(0)
+    else:
+        style_image = Image.open(style_img)
+        content_image = Image.open(content_img)
     #Image : Channel * height * width
     # After unsqueeze: Batch size * Channel * height * width
-    style_image = tr(style_image).unsqueeze(0)
-    content_image = tr(content_image).unsqueeze(0)
+        style_image = tr(style_image).unsqueeze(0)
+        content_image = tr(content_image).unsqueeze(0)
     if input_img == 'noise':
         input_image = torch.randn(content_image.data.size(),device=device)
     return style_image.to(device,torch.float),content_image.to(device,torch.float),input_image
@@ -156,10 +162,15 @@ def run_style_transfer(model,style_losses,content_losses,content_img,style_img,i
     
     return input_img,intermediate_img
 
-def NST(content_lyr,content,style_lyr,style,input_img,num_steps,style_weight,content_weight):
+def NST(content_lyr,content,style_lyr,style,input_img,num_steps,style_weight,content_weight,gr):
     
-    style_img,content_img,input_img = image_loader(f"{dir}/style_images/{style}",f"{dir}/content_images/{content}",input_img,imsize)
-    assert style_img.size() == content_img.size()
+    if not gr:
+    
+        style_img,content_img,input_img = image_loader(f"{dir}/style_images/{style}",f"{dir}/content_images/{content}",input_img,imsize,False)
+        assert style_img.size() == content_img.size()
+    else:
+        style_img,content_img,input_img = style,content,input_img
+        assert style_img.size() == content_img.size()
     
     # Get the VGG 19 model (Set it to evaluation mode)
     cnn = models.vgg19(pretrained = True).features.to(device).eval()
@@ -174,6 +185,12 @@ def NST(content_lyr,content,style_lyr,style,input_img,num_steps,style_weight,con
     output,inter = run_style_transfer(model,style_losses,content_losses,content_img,style_img,
                                 input_img,num_steps=num_steps,style_weight = style_weight,content_weight = content_weight)
     
+    if gr:
+        tr = transforms.ToPILImage()
+        image = output.cpu().clone()
+        image = image.squeeze(0) # Remove the batch dimension
+        image = tr(image)
+        return image
     id = uuid.uuid4()
     saved_img = f"{save_dir}/{os.path.splitext(args.style)[0]}_{os.path.splitext(args.content)[0]}_{id}"
     
@@ -222,13 +239,13 @@ if __name__ == '__main__':
         plt.figure()
         display_image(input_img,title='Input Image')
         
-        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight)
+        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight,False)
         
         plt.figure()
         display_image(output,title='Output Image')
         plt.ioff()
         plt.show()
     else:
-        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight)
+        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight,False)
         
   
