@@ -36,10 +36,11 @@ Note above samples are on Nvidia 1080Ti GPU and use L-BFGS optimizer. To use L-B
 
 If starting from noise_img otherwise give the starting image as input.
 
-```
-conda create -n env
-conda activate env
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-python main.py --style 'edtaonisl.jpg' --content 'green_bridge.jpeg' --input "noise" --style_weight 1000000 --content_weight 1 --num_steps 500
-
-```
+1. Create a virtual Environment
+  `conda create -n env`
+2. Activate the environment
+  `conda activate env`
+3. Install Pytorch
+  `conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia`
+4. Run
+ `python main.py --style 'edtaonisl.jpg' --content 'green_bridge.jpeg' --input "noise" --style_weight 1000000 --content_weight 1 --num_steps 500`
