@@ -53,4 +53,4 @@ If starting from noise_img otherwise give the starting image as input.
 4. Run
  `python main.py --style 'edtaonisl.jpg' --content 'green_bridge.jpeg' --input "noise" --style_weight 1000000 --content_weight 1 --num_steps 500`
 5. To Run using Gradio
-   `python gradio_nst`
+   `python gradio_nst.py`
