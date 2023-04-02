@@ -1,14 +1,15 @@
 # Neural Style Transfer (PyTorch)
 
 Paper Reference: https://arxiv.org/pdf/1508.06576.pdf
+<p align="center">
+ <img src="nst_images/vg_starry_night_mona_lisa_73c3bdb3-329f-4de1-8f31-89eeb0732911.jpg" alt= “” width="250px" height="250px">   
+</p>
 
-
-
-Configuration used:
+Configuration used:                                                             
 - Optimizer Used: L-BFGS
 - Content Layer = 'Conv_5'
-- Style Layer = Conv_1, Conv_2, Conv_3, Conv_4, Conv_5
-- CNN = VGG 19 (Pre-trained)
+- Style Layer = 'Conv_1', 'Conv_2', 'Conv_3', 'Conv_4', 'Conv_5'
+- CNN = VGG-19 (Pre-trained)
 - GPU = Nvidia 1080Ti
 
 # Examples:
