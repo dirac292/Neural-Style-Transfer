@@ -21,4 +21,4 @@ output = gr.outputs.Image(label="Output",type="pil")
 interface = gr.Interface(main, inputs=[input1, input2], outputs=output)
 
 # Launch the interface
-interface.launch(share=True)
+interface.launch()
