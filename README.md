@@ -9,7 +9,7 @@ Configuration used:
 - CNN = VGG 19 (Pre-trained)
 
 # Examples:
-|  Style Image | Content Image  |  Content Weight |  Style Weight |  NST Image |
+|  Style Image | Content Image  |  CW |  SW |  NST Image |
 |---|---|---|---|---|
 |<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   1|   1000000|  <img src="./nst_images/ben_giles_green_bridge_df5065e9-76ee-4f0d-80c3-3a168901193d.jpg" alt= “” width="250px" height="250px"> |
 |<img src="./images/style_images/ben_giles.jpg" alt= “” width="250px" height="250px">|<img src="./images/content_images/green_bridge.jpeg" alt= “” width="250px" height="250px">|   10|   100000|  <img src="nst_images/ben_giles_green_bridge_afff54bc-e067-4914-a38e-c84dccdf3418.jpg" alt= “” width="250px" height="250px"> |
