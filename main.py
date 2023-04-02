@@ -6,6 +6,11 @@
 # a is the syle image
 # x is the generated image
 
+# Paper Reference: https://arxiv.org/pdf/1508.06576.pdf
+
+import os
+import uuid
+import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,30 +24,27 @@ import copy
 from torchvision.utils import save_image
 
 import numpy as np
+from loss import ContentLoss,StyleLoss,Normalization
 
-# device = torch.device("mps" if torch.cuda.is_available() else "cpu")
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-imsize = 512 if torch.backends.mps.is_available() else 256
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+imsize = 512 if torch.cuda.is_available() else 256
 
-
-
-def image_loader(img,imsize):
+def image_loader(style_img,content_img,input_img,imsize):
     tr = transforms.Compose([transforms.Resize((imsize,imsize)),transforms.ToTensor()])
-    image = Image.open(img)
+    style_image = Image.open(style_img)
+    content_image = Image.open(content_img)
     #Image : Channel * height * width
     # After unsqueeze: Batch size * Channel * height * width
-    image = tr(image).unsqueeze(0)
-    return image.to(device,torch.float)
-
-# print(image_loader('images/content_images/golden_gate.jpg').size())
-
-# Load images
-dir = "./images/"
+    style_image = tr(style_image).unsqueeze(0)
+    content_image = tr(content_image).unsqueeze(0)
+    if input_img == 'noise':
+        input_image = torch.randn(content_image.data.size(),device=device)
+    return style_image.to(device,torch.float),content_image.to(device,torch.float),input_image
 
 
-plt.ion()
-
-def imshow(tensor,title=None):
+#Displaying Images
+def display_image(tensor,title=None):
     tr = transforms.ToPILImage()
     image = tensor.cpu().clone()
     image = image.squeeze(0) # Remove the batch dimension
@@ -52,54 +54,6 @@ def imshow(tensor,title=None):
         plt.title(title)
     plt.pause(0.001)
 
-
-# Content Loss
-class ContentLoss(nn.Module):
-    def __init__(self,content):
-        super(ContentLoss,self).__init__()
-        self.content = content.detach() # detach the content from the gradient calculation
-
-    def forward(self,gen): # Input is the generated image
-        self.loss = F.mse_loss(gen,self.content)
-        return gen
-
-def gram_mtx(input):
-    b,c,h,w = input.size() # B, C, H W
-    features = input.view(b*c,h*w)
-    G = torch.mm(features,features.t()) # Gram matrix
-    return G.div(b*c*h*w) # normalize gram matrix
-
-
-
-class StyleLoss(nn.Module):
-    def __init__(self,style):
-        super(StyleLoss,self).__init__()
-        self.style = gram_mtx(style).detach()
-    def forward(self,gen):
-        G = gram_mtx(gen)
-        self.loss = F.mse_loss(G,self.style)
-        return gen
-
-# Get the VGG 19 model (Set it to evaluation mode)
-cnn = models.vgg19(pretrained = True).features.to(device).eval()
-
-# VGG net is normalized with mean and std
-cnn_normalization_mean = torch.tensor([0.485,0.456,0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229,0.224,0.225]).to(device)
-
-class Normalization(nn.Module):
-    def __init__(self,mean,std):
-        super(Normalization,self).__init__()
-        self.mean = torch.tensor(mean).view(-1,1,1) # C * 1 * 1
-        self.std = torch.tensor(std).view(-1,1,1)
-    def forward(self,img):
-        # normalize the image
-        return (img - self.mean)/self.std
-
-
-# Hyperparameters
-content_lyr = ['conv_4']
-style_lyr = ['conv_1','conv_2','conv_3','conv_4','conv_5']
 
 def get_model(cnn,normalization_mean,normalization_std,style_img,content_img,content_lyr,style_lyr):
     cnn = copy.deepcopy(cnn)
@@ -145,24 +99,18 @@ def get_model(cnn,normalization_mean,normalization_std,style_img,content_img,con
             break
     
     model = model[:(i + 1)]
-
     return model,style_losses,content_losses
-
-# print(get_model(cnn,cnn_normalization_mean,cnn_normalization_std,style_img,content_img,content_lyr,style_lyr))
-
-
-
 
 
 def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
 
-def run_style_transfer(cnn,normalization_mean,normalization_std,content_img,style_img,input_img,num_steps=300,style_weight = 1000000,content_weight = 1):
+def run_style_transfer(model,style_losses,content_losses,content_img,style_img,input_img,num_steps=300,
+                       style_weight = 1000000,content_weight = 1):
+    
     print("Building the neural style transfer model..")
-    model,style_losses,content_losses = get_model(cnn,normalization_mean,normalization_std,style_img,content_img,content_lyr,style_lyr)
     optimizer = get_input_optimizer(input_img)
-
     print("Running optimizer")
     run = [0]
     while run[0] <= num_steps:
@@ -190,34 +138,71 @@ def run_style_transfer(cnn,normalization_mean,normalization_std,content_img,styl
                 print(f"run {run}")
                 print("Style Loss : {:4f} Content Loss: {:4f}".format(style_score.item(),content_score.item()))
                 print()
-            
             return style_score + content_score
         optimizer.step(closure)
     input_img.data.clamp_(0,1)
     return input_img
 
+def NST(content_lyr,content_img,style_lyr,style_img,input_img,num_steps,style_weight,content_weight):
+    # Get the VGG 19 model (Set it to evaluation mode)
+    cnn = models.vgg19(pretrained = True).features.to(device).eval()
 
-style_img = image_loader(dir + "style_images/ben_giles.jpg",imsize)
-content_img = image_loader(dir + "content_images/green_bridge.jpeg",imsize)
-input_img = torch.randn(content_img.data.size(),device=device)
+    # VGG net is normalized with mean and std
+    cnn_normalization_mean = torch.tensor([0.485,0.456,0.406]).to(device)
+    cnn_normalization_std = torch.tensor([0.229,0.224,0.225]).to(device)
+    
+    model,style_losses,content_losses = get_model(cnn,cnn_normalization_mean,cnn_normalization_std,style_img,
+                                                  content_img,content_lyr,style_lyr)
+    
+    output = run_style_transfer(model,style_losses,content_losses,content_img,style_img,
+                                input_img,num_steps=1000,style_weight = 1000000,content_weight = 1)
+    
+    return output
 
-assert style_img.size() == content_img.size()
+if __name__ == '__main__':
+    #Params
+    style_lyr = ['conv_1','conv_2','conv_3','conv_4','conv_5']
+    content_lyr = ['conv_5']
+    dir = './images'
+    save_dir = './nst_images'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--content_lyr', type=list, required=False,default=['conv_5'])
+    parser.add_argument('--style_lyr', type=list, required=False,default=['conv_1','conv_2','conv_3','conv_4','conv_5'])
+    parser.add_argument('--style', type=str, required=True)
+    parser.add_argument('--content', type=str, required=True)
+    parser.add_argument('--input', type=str, required=True)
+    parser.add_argument('--display',type = bool,required=False,default=False)
+    parser.add_argument('--num_steps',type = int,required=False,default = 500)
+    parser.add_argument('--style_weight',type=int,required=False,default=1000000)
+    parser.add_argument('--content_weight',type=int,required=False,default=1)
+    
+    args = parser.parse_args()
+    
+    style_img,content_img,input_img = image_loader(f"{dir}/style_images/{args.style}",f"{dir}/content_images/{args.content}",args.input,imsize)
+    
+    assert style_img.size() == content_img.size()
+    
+    id = uuid.uuid4()
+    saved_img = f"{save_dir}/{os.path.splitext(args.style)[0]}_{os.path.splitext(args.content)[0]}_{id}.jpg"
+    
+    if args.display:
+        plt.figure()
+        display_image(style_img,title="style image")
 
-plt.figure()
-imshow(style_img,title="style image")
+        plt.figure()
+        display_image(content_img,title="content_image")
 
-plt.figure()
-imshow(content_img,title="content_image")
-
-plt.figure()
-imshow(input_img,title='Input Image')
-
-output = run_style_transfer(cnn,cnn_normalization_mean,cnn_normalization_std,content_img,style_img,input_img,num_steps=300,style_weight = 100000,content_weight = 10)
-save_image(output,f'{"ben" + "bridge"}.jpg')
-
-plt.figure()
-imshow(output,title='Output Image')
-plt.ioff()
-plt.show()
-
-
+        plt.figure()
+        display_image(input_img,title='Input Image')
+        
+        out = NST(args.content_lyr,content_img,args.style_lyr,style_img,input_img,args.num_steps,args.style_weight,args.content_weight)
+        save_image(out,saved_img)
+        plt.figure()
+        display_image(output,title='Output Image')
+        plt.ioff()
+        plt.show()
+    else:
+        out = NST(args.content_lyr,content_img,args.style_lyr,style_img,input_img,args.num_steps,args.style_weight,args.content_weight)
+        save_image(out,saved_img)
+  
