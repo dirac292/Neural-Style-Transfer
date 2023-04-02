@@ -1,6 +1,7 @@
 # Neural Style Transfer
 
 Paper Reference: https://arxiv.org/pdf/1508.06576.pdf
+Implementation in PyTorch
 
 Configuration used:
 - Optimizer Used: L-BFGS
