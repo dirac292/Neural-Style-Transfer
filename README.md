@@ -7,6 +7,7 @@ Configuration used:
 - Content Layer = 'Conv_5'
 - Style Layer = Conv_1, Conv_2, Conv_3, Conv_4, Conv_5
 - CNN = VGG 19 (Pre-trained)
+- GPU = Nvidia 1080Ti
 
 # Examples:
 |  Style Image | Content Image  |  CW |  SW |  NST Image |
