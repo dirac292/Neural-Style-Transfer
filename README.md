@@ -2,6 +2,12 @@
 
 Paper Reference: https://arxiv.org/pdf/1508.06576.pdf
 
+Configuration used:
+- Optimizer Used: L-BFGS
+- Content Layer = 'Conv_5'
+- Style Layer = Conv_1, Conv_2, Conv_3, Conv_4, Conv_5
+- CNN = VGG 19 (Pre-trained)
+
 # Examples:
 |  Style Image | Content Image  |  Content Weight |  Style Weight |  NST Image |
 |---|---|---|---|---|
@@ -20,3 +26,14 @@ Eg 1:
 Eg 2:
   <img src="nst_images/edtaonisl_green_bridge_b56689d8-0344-41c7-a5ae-1586c9270389_sequence.jpg"   width = "1500px" height="150px">
 
+
+# How to run this ?
+
+Note above samples are on Nvidia 1080Ti GPU and use L-BFGS optimizer. To use L-BFGS need a GPU machine with CUDA installed. For torch.cuda.is_available() is false use Adam optimizer instead
+
+If starting from noise_img otherwise give the starting image as input.
+
+```
+python main.py --style 'edtaonisl.jpg' --content 'green_bridge.jpeg' --input "noise" --style_weight 1000000 --content_weight 1 --num_steps 500
+
+```
