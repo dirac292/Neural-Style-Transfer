@@ -112,6 +112,15 @@ def run_style_transfer(model,style_losses,content_losses,content_img,style_img,i
     print("Building the neural style transfer model..")
     optimizer = get_input_optimizer(input_img)
     print("Running optimizer")
+    tr = transforms.ToPILImage()
+    intermediate_img = []
+    
+    image = input_img.detach().cpu().clone()
+    image_np = image.squeeze(0)
+    image_np = tr(image_np)
+    intermediate_img.append(image_np)
+   # np.transpose(input_img.detach().cpu().numpy(), (1, 2, 0))
+    plt.imshow(image_np)
     run = [0]
     while run[0] <= num_steps:
         def closure():
@@ -134,16 +143,24 @@ def run_style_transfer(model,style_losses,content_losses,content_img,style_img,i
             loss.backward()
 
             run[0] += 1 
-            if run[0] % 50 == 0:
+            if run[0] % 100 == 0:
                 print(f"run {run}")
                 print("Style Loss : {:4f} Content Loss: {:4f}".format(style_score.item(),content_score.item()))
-                print()
+                image = input_img.detach().cpu().clone()
+                image_np = image.squeeze(0)
+                image_np = tr(image_np)
+                intermediate_img.append(image_np)
             return style_score + content_score
         optimizer.step(closure)
     input_img.data.clamp_(0,1)
-    return input_img
+    
+    return input_img,intermediate_img
 
-def NST(content_lyr,content_img,style_lyr,style_img,input_img,num_steps,style_weight,content_weight):
+def NST(content_lyr,content,style_lyr,style,input_img,num_steps,style_weight,content_weight):
+    
+    style_img,content_img,input_img = image_loader(f"{dir}/style_images/{style}",f"{dir}/content_images/{content}",input_img,imsize)
+    assert style_img.size() == content_img.size()
+    
     # Get the VGG 19 model (Set it to evaluation mode)
     cnn = models.vgg19(pretrained = True).features.to(device).eval()
 
@@ -154,12 +171,28 @@ def NST(content_lyr,content_img,style_lyr,style_img,input_img,num_steps,style_we
     model,style_losses,content_losses = get_model(cnn,cnn_normalization_mean,cnn_normalization_std,style_img,
                                                   content_img,content_lyr,style_lyr)
     
-    output = run_style_transfer(model,style_losses,content_losses,content_img,style_img,
-                                input_img,num_steps=1000,style_weight = 1000000,content_weight = 1)
+    output,inter = run_style_transfer(model,style_losses,content_losses,content_img,style_img,
+                                input_img,num_steps=num_steps,style_weight = style_weight,content_weight = content_weight)
     
-    return output
+    id = uuid.uuid4()
+    saved_img = f"{save_dir}/{os.path.splitext(args.style)[0]}_{os.path.splitext(args.content)[0]}_{id}"
+    
+    save_image(output,f"{saved_img}.jpg")
+    
+    fig, axs = plt.subplots(nrows=1, ncols=len(inter), figsize=(20, 5))
+    for i, img in enumerate(inter):
+        axs[i].imshow(img)
+        axs[i].axis('off')
+        
+    filename = f"{saved_img}_sequence.jpg"
+    plt.savefig(filename)
+    
 
 if __name__ == '__main__':
+    
+    import random
+    random.seed(10)
+    
     #Params
     style_lyr = ['conv_1','conv_2','conv_3','conv_4','conv_5']
     content_lyr = ['conv_5']
@@ -177,14 +210,7 @@ if __name__ == '__main__':
     parser.add_argument('--style_weight',type=int,required=False,default=1000000)
     parser.add_argument('--content_weight',type=int,required=False,default=1)
     
-    args = parser.parse_args()
-    
-    style_img,content_img,input_img = image_loader(f"{dir}/style_images/{args.style}",f"{dir}/content_images/{args.content}",args.input,imsize)
-    
-    assert style_img.size() == content_img.size()
-    
-    id = uuid.uuid4()
-    saved_img = f"{save_dir}/{os.path.splitext(args.style)[0]}_{os.path.splitext(args.content)[0]}_{id}.jpg"
+    args = parser.parse_args()    
     
     if args.display:
         plt.figure()
@@ -196,13 +222,13 @@ if __name__ == '__main__':
         plt.figure()
         display_image(input_img,title='Input Image')
         
-        out = NST(args.content_lyr,content_img,args.style_lyr,style_img,input_img,args.num_steps,args.style_weight,args.content_weight)
-        save_image(out,saved_img)
+        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight)
+        
         plt.figure()
         display_image(output,title='Output Image')
         plt.ioff()
         plt.show()
     else:
-        out = NST(args.content_lyr,content_img,args.style_lyr,style_img,input_img,args.num_steps,args.style_weight,args.content_weight)
-        save_image(out,saved_img)
+        NST(args.content_lyr,args.content,args.style_lyr,args.style,args.input,args.num_steps,args.style_weight,args.content_weight)
+        
   
