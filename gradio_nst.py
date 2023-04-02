@@ -7,12 +7,12 @@ def main(input1,input2): # Style and content
     style_img,content_img,input_img = image_loader(input1,input2,"noise",imsize,True)
     out = NST(content_lyr,content_img,style_lyr,style_img,input_img,500,1000000,1,True)
     return out
-    # pass# Implement your sketch recognition model here...
+    
 
 # Define the inputs
-input1 = gr.inputs.Image(label="Input 1",type="pil")
+input1 = gr.inputs.Image(label="Style Image",type="pil")
 
-input2 = gr.inputs.Image(label="Input 2",type="pil")
+input2 = gr.inputs.Image(label="Content Image",type="pil")
 
 # Define the output
 output = gr.outputs.Image(label="Output",type="pil")
@@ -21,4 +21,4 @@ output = gr.outputs.Image(label="Output",type="pil")
 interface = gr.Interface(main, inputs=[input1, input2], outputs=output)
 
 # Launch the interface
-interface.launch()
+interface.launch(share=True)
